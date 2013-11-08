@@ -67,7 +67,7 @@ enum scheme_t
 
 
 #define base_ctors\
-    _path(),\
+    m_path(),\
     m_suspicious(),\
     m_scheme(),\
     m_has_authority(),\
@@ -160,7 +160,7 @@ void Url::assign(const string& s)
 bool Url::syntax_ok() const  {
     string s;
     if( has_authority() )
-        if( ! ( _path.empty() || _path.absolute() ) )
+        if( ! ( m_path.empty() || m_path.absolute() ) )
             return false;
 
     if( scheme().find_first_of(":/?#") != string::npos )
@@ -268,11 +268,11 @@ Url& Url::merge_ref(const Url& u)
                 //else
                 //    this->clear_query();
             } else {
-                if( u._path.empty() ) {
+                if( u.m_path.empty() ) {
                     if( u.has_query() )
                         this->query(u.query());
                 } else {
-                    this->_path.merge(u._path); // magic lies here
+                    this->m_path.merge(u.m_path); // magic lies here
                     if( u.has_query() )
                         this->query(u.query());
                     else
@@ -354,8 +354,8 @@ ostream& operator<<(ostream& os, const Url& u) {
         os << "host: " << u.m_host << endl;
     if( ! u.m_port.empty() )
         os << "port: " << u.m_port << endl;
-    if( ! u._path.empty() )
-        os << "path: " << u._path << endl;
+    if( ! u.m_path.empty() )
+        os << "path: " << u.m_path << endl;
     if( u.has_query() ) {
         os << "has_query" << endl;
         os << "query: " << u.m_query << endl;
@@ -520,7 +520,7 @@ string Url::authority() const
 
 bool Url::empty() const
 {
-    if( ! m_scheme.empty() || m_has_authority || ! _path.empty() || has_query() || has_fragment() )
+    if( ! m_scheme.empty() || m_has_authority || ! m_path.empty() || has_query() || has_fragment() )
         return false;
     else
         return true;
@@ -621,9 +621,9 @@ std::string Url::port() const
 
 void Url::path(const string& s)
 {
-    _path.assign(escape(s,URL_CHAR_PATH));
+    m_path.assign(escape(s,URL_CHAR_PATH));
     if( has_authority() )
-        _path.absolute(true);
+        m_path.absolute(true);
 }
 
 void Url::query(const string& s)

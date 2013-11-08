@@ -385,7 +385,7 @@ public:
         m_scheme.clear();
         clear_authority();
 
-        _path.clear();
+        m_path.clear();
 
         clear_query();
         clear_fragment();
@@ -522,11 +522,11 @@ public:
     void path(const std::string& s);
     std::string path() const
     {
-        return _path.get();
+        return m_path.get();
     }
 
     /// Remove dot segments
-    void normalize_path()  { _path.normalize(); };
+    void normalize_path()  { m_path.normalize(); };
 
     void query(const std::string& s);
     std::string query() const  { return m_query; }
@@ -536,7 +536,7 @@ public:
 
     void set_def_port();
 
-    Path        _path;
+    Path        m_path;
 
     friend class Url_lexer;
 
