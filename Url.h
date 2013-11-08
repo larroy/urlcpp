@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Pedro Larroy Tovar
+ * Copyright 2013 Pedro Larroy Tovar
  *
  * This file is subject to the terms and conditions
  * defined in file 'LICENSE.txt', which is part of this source
@@ -44,9 +44,6 @@
 
 #include <string>
 #include <stdexcept>
-#include <cctype>
-#include <sstream>
-#include <stdint.h>
 #include <boost/regex.hpp>
 
 #include "Path.h"
@@ -205,110 +202,25 @@ static const unsigned char url_char_table[256] =
 #undef X
 
 #define url_char_test(c, mask) (url_char_table[(unsigned char)(c)] & (mask))
-/*
-#define URL_SAFE_NOT_RESERVED(c) (url_char_table[(unsigned char)(c)] == 0)
-#define URL_RESERVED_OR_UNSAFE(c) (url_char_table[(unsigned char)(c)] != 0)
-#define URL_RESERVED(c) url_char_test(c, URL_CHAR_RESERVED)
-#define URL_UNSAFE(c) url_char_test(c, URL_CHAR_UNSAFE)
-*/
 
 } // end namespace
 
 /**
- * @class Flags Url.hh
- * @author piotr
- * @brief handles URL flags
- * \verbatim
- * Url Flags
- *
- * 16 bits for flags
- *
- *  |15|14|13|12|11|10| 9| 8| 7| 6| 5| 4| 3| 2| 1| 0|
- *  |      priority         |   depth   |           |
- *
- *  higher priorities favor crawling sooner
- *  depth of 0 means not recursing, max depth is 2^4-2 = 14, 15 is infinite
- *
- * \endverbatim
- *
- */
-
-/*
-
-class UrlFlags {
-    public:
-        typedef uint16_t flags_t;
-        static const flags_t prio_mask = 0xff00;
-        static const flags_t depth_mask = 0x00f0;
-        enum flag_t {
-            F_NOINDEX    = 0x0001,
-            F_STORE        = 0x0002,
-
-            DEPTH_INFINITE = 0x000f,
-        };
-
-        inline bool is_flag(flag_t flag) const {
-            return( (_flags & flag) == flag);
-        }
-        inline void set_flag(flag_t flag) {
-            _flags |= flag;
-        }
-        inline void clear_flag(flag_t flag) {
-            _flags &= ~flag;
-        }
-        inline flags_t get_priority() const {
-            return((_flags & prio_mask)>>8);
-        }
-        inline void set_priority(flags_t prio) {
-            if( (prio & ~0x00ff) != 0 ) {
-                clog << "prio value too high, setting at max" << endl;
-                _flags |= 0xff00;
-            } else {
-                prio &= 0x00ff;
-                prio <<= 8;
-                _flags &= 0x00ff; // delete priority
-                _flags |= prio;
-            }
-        }
-        inline flags_t get_depth() const {
-            return((_flags & depth_mask)>>4);
-        }
-        inline void set_depth(flags_t depth) {
-            if( (depth & ~ 0x000f) != 0 ) {
-                clog << "depth value too high, setting at max" << endl;
-                _flags |= 0x00f0;
-            } else {
-                depth &= 0x000f;
-                depth <<= 4;
-                _flags &= ~depth_mask;
-                _flags |= depth;
-            }
-        }
-    private:
-        flags_t _flags;
-};
-
-*/
-
-
-/**
  * @brief Exception thrown if the url doesn't look to be valid
  */
-class BadUrl : public std::runtime_error {
+class BadUrl: public std::runtime_error {
     public:
-        BadUrl(const std::string& reason) : std::runtime_error(reason) { }
-        BadUrl() : std::runtime_error("unspecified") { }
+        BadUrl(const std::string& reason): std::runtime_error(reason) { }
+        BadUrl(): std::runtime_error("unspecified") { }
 };
 
 /**
  * @brief Exception thrown in case url doesn't parse correctly
  */
-class UrlParseError : public BadUrl {
-    public:
-        UrlParseError(const std::string& reason) : BadUrl(reason) {
-        }
-        UrlParseError() : BadUrl() {
-        }
+class UrlParseError: public BadUrl {
+public:
+    UrlParseError(const std::string& reason) : BadUrl(reason) { }
+    UrlParseError(): BadUrl() { }
 };
 
 
@@ -317,14 +229,7 @@ class Url {
 public:
     /// @throw UrlParseError on url parsing error
     explicit Url(const std::string& s);
-    explicit Url() ;
-
-    ~Url()  {};
-
-    void print()
-    {
-        std::cout << this;
-    }
+    explicit Url();
 
     /// @throw UrlParseError on url parsing error
     void assign(const std::string& s);
@@ -361,7 +266,10 @@ public:
     }
     void safe_bool_aux() const {}
 
-    operator std::string() { return get(); }
+    operator std::string()
+    {
+        return get();
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Url& u);
     /**
@@ -379,9 +287,8 @@ public:
      */
     void normalize();
 
-    void clear() {
-        m_suspicious=false;
-
+    void clear()
+    {
         m_scheme.clear();
         clear_authority();
 
@@ -470,7 +377,8 @@ public:
         return (! m_scheme.empty());
     }
 
-    void clear_authority()  {
+    void clear_authority()
+    {
         m_host_ip_literal=false;
         m_has_authority = false;
         m_userinfo.clear();
@@ -478,19 +386,23 @@ public:
         m_port.clear();
     }
 
-    bool has_query() const  { return ! m_query.empty(); }
+    bool has_query() const
+    {
+        return ! m_query.empty();
+    }
 
     void clear_query()
     {
-        // _has_query = false;
         m_query.clear();
     }
 
-    bool has_fragment() const  { return ! m_fragment.empty(); }
+    bool has_fragment() const
+    { 
+        return ! m_fragment.empty();
+    }
 
     void clear_fragment()
     {
-        // _has_fragment = false;
         m_fragment.clear();
     }
 
@@ -516,50 +428,38 @@ public:
     }
 
     void port(const std::string& s);
+    /// @returns port
     std::string port() const;
     int port_int() const;
 
     void path(const std::string& s);
+    /// @returns the path
     std::string path() const
     {
         return m_path.get();
     }
 
-    /// Remove dot segments
+    /// normalize path, removing /./ and /../ segments
     void normalize_path()  { m_path.normalize(); };
 
     void query(const std::string& s);
+    /// @return the query part
     std::string query() const  { return m_query; }
 
     void fragment(const std::string& s);
+    /// @return the fragment part
     std::string fragment() const  { return m_fragment; }
 
     void set_def_port();
 
     Path        m_path;
-
-    friend class Url_lexer;
-
-//    protected:
-    /**
-     * host must be enclosed by []
-     */
-    /**
-     * one of those long urls with @ at the end that could mislead the user
-     */
-    bool m_suspicious;
-
     std::string m_scheme;
-
-    // authority
     bool m_has_authority;
     bool m_host_ip_literal;
     std::string m_userinfo;
     std::string m_host;
     std::string m_port;
-
     std::string m_query;
-
     std::string m_fragment;
 };
 

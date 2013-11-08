@@ -7,6 +7,7 @@
  */
 #include "Url.h"
 #include <boost/algorithm/string.hpp>
+#include <sstream>
 
 
 using namespace std;
@@ -27,20 +28,23 @@ const char* scheme_defport[] = {
 
 const boost::regex url_re(url_regex[RE_URL],regex_constants::perl);
 
-char xdigit_to_num(char c) throw(std::logic_error) {
+char xdigit_to_num(char c) throw(std::logic_error)
+{
     if( ! isxdigit(c) )
         throw std::logic_error("not an hex digit");
     return(c < 'A' ? c - '0' : toupper(c) - 'A' + 10);
 }
 
 
-char x2digits_to_num(char c1, char c2) throw(std::logic_error) {
+char x2digits_to_num(char c1, char c2) throw(std::logic_error)
+{
     if( ! isxdigit(c1) || ! isxdigit(c2) )
         throw std::logic_error("not an hex digit");
     return((xdigit_to_num(c1) << 4) + xdigit_to_num(c2));
 }
 
-char digit_to_xnum(char c) throw(std::logic_error) {
+char digit_to_xnum(char c) throw(std::logic_error)
+{
     if( c >= 0 && c <= 15 )
         return ("0123456789ABCDEF"[(int)c]);
     else
@@ -68,7 +72,6 @@ enum scheme_t
 
 #define base_ctors\
     m_path(),\
-    m_suspicious(),\
     m_scheme(),\
     m_has_authority(),\
     m_host_ip_literal(),\
@@ -157,7 +160,8 @@ void Url::assign(const string& s)
     }
 }
 
-bool Url::syntax_ok() const  {
+bool Url::syntax_ok() const
+{
     string s;
     if( has_authority() )
         if( ! ( m_path.empty() || m_path.absolute() ) )
@@ -606,17 +610,7 @@ int Url::port_int() const
 
 std::string Url::port() const
 {
-/*    if( m_port.empty() )
-        if( m_scheme == "http")
-            return scheme_defport[SCHEME_HTTP];
-        else if ( m_scheme == "ftp")
-            return scheme_defport[SCHEME_FTP];
-        else if ( m_scheme == "file")
-            return "";
-        else
-            return "";
-    else */
-        return m_port;
+    return m_port;
 }
 
 void Url::path(const string& s)
@@ -629,21 +623,18 @@ void Url::path(const string& s)
 void Url::query(const string& s)
 {
     m_query.assign(escape(s,URL_CHAR_QUERY));
-    //_has_query = true;
 }
 
 void Url::fragment(const string& s)
 {
     m_fragment.assign(escape(s,URL_CHAR_FRAGMENT));
-    //_has_fragment = true;
 }
-/***** END ACCESSORS *****/
 
-// This one is a bad idea, don't use it
 void Url::set_def_port()
 {
     using namespace utils;
-    if( ! m_scheme.empty() ) {
+    if( ! m_scheme.empty() )
+    {
         if( scheme() == "http")
             port(scheme_defport[SCHEME_HTTP]);
         else if ( scheme() == "ftp")
@@ -655,7 +646,6 @@ void Url::set_def_port()
 
     } else
         throw UrlParseError("set_def_port: scheme is empty");
-
 }
 
 
@@ -674,14 +664,6 @@ string Url::get() const {
     res += path();
     res += query();
     res += fragment();
-//    if( has_query() ) {
-//        res += "?";
-//        res += query();
-//    }
-//    if( has_fragment() ) {
-//        res += "#";
-//        res += fragment();
-//    }
     return res;
 }
 
@@ -699,14 +681,6 @@ size_t Url::size() const
     res += path().size();
     res += query().size();
     res += fragment().size();
-//    if( has_query() ) {
-//        ++res;// += "?";
-//        res += query().size();
-//    }
-//    if( has_fragment() ) {
-//        ++res;// += "#";
-//        res += fragment().size();
-//    }
     return res;
 }
 
@@ -805,7 +779,8 @@ string Url::unescape(const string& s, const unsigned char mask) {
     return result;
 }
 
-string Url::unescape_not(const string& s, const unsigned char mask) {
+string Url::unescape_not(const string& s, const unsigned char mask)
+{
     // avoid copying if there's nothing to unescape
     if( s.empty() || (s.find('%') == string::npos ))
         return s;
